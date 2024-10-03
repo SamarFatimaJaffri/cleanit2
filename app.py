@@ -39,7 +39,7 @@ class App:
                     df, data = get_dataframe(data)
                     st.dataframe(df, height=150)
 
-                submitted = st.form_submit_button('Analyze it →', on_click=save_data(df))
+                submitted = st.form_submit_button('Clean it →', on_click=save_data(df))
             st.session_state['is_expanded'] = False
 
         # clean and analyze data
@@ -52,7 +52,6 @@ class App:
 
             st.subheader('Here is your cleaned data', anchor=False, divider='rainbow')
             st.write(Data.data)
-            # st.write(analysis[0].raw)
 
 
 if __name__ == '__main__':
