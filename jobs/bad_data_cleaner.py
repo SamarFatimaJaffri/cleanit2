@@ -1,7 +1,7 @@
 from jobs.agent import Agent
 from data_buffer import Data
 import re
-from tools import BadDataTool as Tools
+from tools import BadDataTool as Tools, ObservationTools as OTools
 
 import logging
 
@@ -57,7 +57,7 @@ class BadDataCleaner(Agent):
         User:"""
         res = re.findall(
             r'\[[^]]*]',
-            self.respond(Data.data[column], prompt, examples)
+            self.respond(OTools.get_values(column), prompt, examples)
         )[0]
         indexes = eval(res)
         if not isinstance(indexes, list):
@@ -95,7 +95,11 @@ class BadDataCleaner(Agent):
                     return
                 elif action.startswith('replace_bad_data'):
                     action, value = action.split(', ')
-                    Tools.replace_bad_data(column, index, eval(value))
+                    try:
+                        value = eval(value)
+                    except Exception as e:
+                        logging.exception(f'Exception: {e}.\nValue {value} cannot be evaluated')
+                    Tools.replace_bad_data(column, index, value)
                 else:
                     exec(f'Tools.{action}(index)')
             except AttributeError:

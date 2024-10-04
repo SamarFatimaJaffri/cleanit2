@@ -2,7 +2,7 @@ import logging
 
 from jobs.agent import Agent
 from data_buffer import Data
-from tools import FormatCorrectionTools as Tools
+from tools import FormatCorrectionTools as Tools, ObservationTools as OTools
 
 
 class Formatter(Agent):
@@ -19,7 +19,8 @@ class Formatter(Agent):
 
     def _correct_data_format(self):
         actions = """Analyze the data and correct the column format if required by taking appropriate action and if no action is required choose NA.
-        You are also supposed to correct values if so requires e.g., removing commas, or characters like %, $, etc from numeric columns so that data can be analyzed
+        You are also supposed to correct values if so requires e.g., removing commas, or characters like %, $, etc from numeric columns so that data can be analyzed.
+        For all the columns that contain numeric values e.g., salary, count, etc. change the type to numeric from object / strings.
         
         Available actions:
         - value_correction, <{'old1': 'new1', 'old2': 'new2'}> (specify the dict containing old and substrings along with new substrings you want to replace them with, use escape sequence where you would in regex e.g., \^)
@@ -69,7 +70,7 @@ class Formatter(Agent):
         
         User:"""
         for column in Data.columns():
-            action = self.select_action(Data.data[column], actions, examples)
+            action = self.select_action(OTools.get_values(column), actions, examples)
             try:
                 if action.startswith('value_correction'):
                     action = action.split('\n')

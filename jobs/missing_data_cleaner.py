@@ -1,7 +1,8 @@
 from jobs.agent import Agent
 from data_buffer import Data
-from tools import MissingValueTools as Tools
+from tools import MissingValueTools as Tools, ObservationTools as OTools
 
+import logging
 import numpy as np
 import pandas as pd
 
@@ -81,7 +82,7 @@ class MissingDataCleaner(Agent):
         fill_with_median
         
         User:"""
-        action = self.select_action(Data.data[column], actions, examples)
+        action = self.select_action(OTools.get_values(column), actions, examples)
         try:
             exec(f'Tools.{action}(column)')
         except AttributeError:
@@ -140,7 +141,11 @@ class MissingDataCleaner(Agent):
         try:
             if action.startswith('fill_nulls'):
                 action, value = action.split(', ')
-                Tools.fill_nulls(column, eval(value))
+                try:
+                    value = eval(value)
+                except Exception as e:
+                    logging.exception(f'Exception: {e}.\nValue {value} cannot be evaluated')
+                Tools.fill_nulls(column, value)
             else:
                 exec(f'Tools.{action}(column)')
         except AttributeError:
