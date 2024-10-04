@@ -38,13 +38,15 @@ class Agent:
             ]
             st.markdown(f':red[**System:**]\n\n{self.messages[0][1]}')
 
-        self.messages.append(('user', f"{task}\n\n{additional_info}\n{data}\n\nYou:"))
+        messages = [
+            self.messages[0],
+            ('user', f"{task}\n\n{additional_info}\n{data}\n\nYou:")
+        ]
 
         st.markdown(':orange[**User:**]')
-        for message in self.messages[1:]:
-            st.markdown(f'\n{message[1]}')
+        st.write(f'\n{messages[-1][1]}')
 
-        res = self._llm.invoke(self.messages)
+        res = self._llm.invoke(messages)
         st.write(f':green[**Response:**]\n\n{res.content}')
 
         return res.content
