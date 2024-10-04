@@ -80,7 +80,6 @@ class Formatter(Agent):
 
                 if action == 'NA':
                     logging.info('No action required')
-                    return
                 elif action == 'format_to_int':
                     Tools.format_to_int(column)
                 else:

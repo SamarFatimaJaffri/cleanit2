@@ -92,14 +92,14 @@ class BadDataCleaner(Agent):
             try:
                 if action == 'NA':
                     logging.info('No action required')
-                    return
                 elif action.startswith('replace_bad_data'):
                     action, value = action.split(', ')
+                    evaluated = None
                     try:
-                        value = eval(value)
+                        evaluated = eval(value)
                     except Exception as e:
                         logging.exception(f'Exception: {e}.\nValue {value} cannot be evaluated')
-                    Tools.replace_bad_data(column, index, value)
+                    Tools.replace_bad_data(column, index, evaluated if evaluated else value)
                 else:
                     exec(f'Tools.{action}(index)')
             except AttributeError:

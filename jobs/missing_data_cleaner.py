@@ -141,11 +141,12 @@ class MissingDataCleaner(Agent):
         try:
             if action.startswith('fill_nulls'):
                 action, value = action.split(', ')
+                evaluated = None
                 try:
-                    value = eval(value)
+                    evaluated = eval(value)
                 except Exception as e:
                     logging.exception(f'Exception: {e}.\nValue {value} cannot be evaluated')
-                Tools.fill_nulls(column, value)
+                Tools.fill_nulls(column, evaluated if evaluated else value)
             else:
                 exec(f'Tools.{action}(column)')
         except AttributeError:
