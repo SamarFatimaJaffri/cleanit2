@@ -1,0 +1,261 @@
+find_bad_data_values:
+  agent: BadDataExpert
+  task: >
+    Analyze the data and locate bad data from all the values, return the indexes of all the bad data values, and if
+    there is no bad data return []
+
+    You must not treat null values, wrong formatting, or values with extra substrings as bad data.
+  examples: |
+    User:
+    0         0.000042
+    1        83.000000
+    2        75.000000
+    3        38.000000
+    4        56.000000
+    5        64.000000
+    6        74.000000
+    7        23.000000
+    8    757483.000000
+    9        75.000000
+
+    You:
+    [0, 8]
+    0.000042 and 757483.000000 are outliers.
+
+    User:
+    0       453
+    1     294.8
+    2    $563.8
+    3     634.1
+    4    $645.9
+
+    You:
+    []
+    There is no outlier, and all the values with units have same unit. There are some values with '$' symbol but that is
+    a format issue, not a bad data as per instructions.
+
+    User:
+    0       453
+    1     294.8
+    2    $563.8
+    3     634.1
+    4    €645.9
+
+    You:
+    [4]
+    €645.9 has inconsistent unit. It need to be converted to equivalent dollar amount.
+    
+    User:
+
+clean_bad_data:
+  agent: BadDataExpert
+  task: >
+    Analyze the data and select the action best suitable to perform on the bad-data values. You must only choose
+    `remove_bad_data` if replacing it with the correct value if not possible.
+    
+    Available actions:
+    
+    - replace_bad_data, <value> (specify value to replace the previous value with)
+    
+    - remove_bad_data
+    
+    - NA
+  examples: |
+    User:
+    INdia
+
+    You:
+    replace_bad_data, India
+
+    User:
+    0&4659
+
+    You:
+    remove_bad_data
+
+    User:
+
+replace_substrings:
+  agent: BadDataExpert
+  task: >
+    Analyze the data and make corrections in the data if required by removing unwanted substrings from values such as
+    commas, or characters like %, $, etc from numeric columns so that data can be analyzed and if no correction is
+    required choose NA.
+
+    You must remove all non-numeric substring from the numeric columns like salary, count, etc.
+
+    Available actions:
+
+    - value_correction, <{'old1': 'new1', 'old2': 'new2'}> (specify the python dictionary containing old substrings you
+    want to replace, with new substrings you want to replace them with. You must use escape sequence where you would in
+    python regex like \^)
+    
+    - NA
+  examples: |
+    User:
+    0      $362
+    1      8300
+    2     7,597
+    3     $3820
+    4       565
+    5      6472
+    6     7,425
+    7    $232.0
+    8       733
+    
+    You:
+    value_correction, {'\$': '', ',': ''}
+    
+    User:
+
+correct_data_format:
+  agent: FormatExpert
+  task: >
+    Analyze the data and correct the column format if required by taking appropriate action and if no action is 
+    required choose NA.
+        
+    Format all the columns that contain numeric values e.g., salary, count, etc. to numeric from object / strings.
+    
+    Available actions:
+    
+    - format_to_int
+    
+    - format_to_datetime, <format> (specify the date format)
+    
+    - typecast_column, <type> (specify the correct datatype)
+    
+    - NA
+  examples: |
+    User:
+    0     1234
+    1    3,524
+    2    1,643
+    3       57
+    4     2459
+    
+    You:
+    format_to_int
+    
+    User:
+    0     True
+    1    False
+    2    False
+    3        1
+    4     True
+    5     True
+    6        0
+    
+    You:
+    typecast_column, bool
+    
+    User:
+
+clean_numeric_values:
+  agent: MissingValuesExpert
+  task: |
+    Analyze the data and select the action best suitable to perform on the missing values based on your analysis.
+    Available actions:
+    - remove_nulls
+    - fill_with_mean
+    - fill_with_median
+    - fill_with_mode
+  examples: |
+    User:
+    0     56.0
+    1     85.0
+    2     48.0
+    3     14.0
+    4     87.0
+    5     25.0
+    6     86.0
+    7      NaN
+    8     46.0
+    9     35.0
+    10    47.0
+    Name: sales, dtype: float64
+
+    You:
+    remove_nulls
+
+    User:
+    0     89.58
+    1     95.59
+    2    103.57
+    3    115.64
+    4    120.29
+    5    114.37
+    6     84.34
+    7     82.78
+    8    119.45
+    9     93.59
+    Name: height, dtype: float64
+
+    You:
+    fill_with_mean
+
+    User:
+    0    13
+    1     4
+    2     9
+    3    26
+    4     8
+    5     6
+    6    10
+    7     7
+    8     3
+    9     8
+    Name: in_stock, dtype: int64
+
+    You:
+    fill_with_median
+
+    User:
+
+clean_non_numeric_values:
+  agent: MissingValuesExpert
+  task: |
+    Analyze the data and select the action best suitable to perform on the missing values based on your analysis.
+    Available actions:
+    - remove_nulls
+    - fill_nulls, <value> (specify value to fill nulls with)
+    - fill_with_mode
+  examples: |
+    User:
+    0      Oliver
+    1        None
+    2        Noah
+    3         Ava
+    4        Liam
+    5      Sophia
+    6       Jacob
+    7    Isabella
+    8       Mason
+    9      Olivia
+    Name: name, dtype: object 
+    
+    You:
+    remove_nulls
+    
+    User:
+    0       Brazil
+    1    Australia
+    2       Canada
+    3        Spain
+    4        None
+    Name: country, dtype: object 
+    
+    You:
+    fill_nulls, unspecified
+    
+    User:
+    0    cat
+    1    dog
+    2    cat
+    3    cat
+    4    cat
+    Name: pet, dtype: object
+    
+    You:
+    fill_with_mode
+    
+    User:

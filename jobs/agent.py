@@ -1,15 +1,13 @@
-from data_buffer import Data
 from langchain_groq import ChatGroq
 
-import numpy as np
-import pandas as pd
 import streamlit as st
+import yaml
 
 
 class Agent:
-    def __init__(self, config, model_name='llama3-70b-8192'):
-        self._config = config
-        self._task_config = None
+    def __init__(self, agent_config, model_name='llama3-70b-8192'):
+        self.agent_config = agent_config
+        self.task_config = yaml.full_load(open('jobs/config/tasks.yaml'))
         self._llm = ChatGroq(
             temperature=0,
             groq_api_key=st.secrets['GROQ_API_KEY'],
@@ -17,24 +15,13 @@ class Agent:
         )
         self.messages = []
 
-    def task(self, config):
-        self._task_config = config
-
-        def decorator_inner(func):
-            def wrapper(*args, **kwargs):
-                func(*args, **kwargs)
-
-            return wrapper
-
-        return decorator_inner
-
     def respond(self, data, task: str, additional_info: str) -> str:
         """Get response from agent"""
         if not self.messages:
-            st.subheader(self._config['designation'], divider='gray')
+            st.subheader(self.agent_config['designation'], divider='gray')
 
             self.messages = [
-                ('system', f"{self._config['role']}\n\nYour goal is to {self._config['goal']}"),
+                ('system', f"{self.agent_config['role']}\n\nYour goal is to {self.agent_config['goal']}"),
             ]
             st.markdown(f':red[**System:**]\n\n{self.messages[0][1]}')
 
@@ -44,7 +31,8 @@ class Agent:
         ]
 
         st.markdown(':orange[**User:**]')
-        st.write(f'\n{messages[-1][1]}')
+        st.markdown(f'\n{task}\n\n{additional_info}')
+        st.write(data)
 
         res = self._llm.invoke(messages)
         st.write(f':green[**Response:**]\n\n{res.content}')
