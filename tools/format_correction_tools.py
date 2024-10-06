@@ -5,14 +5,6 @@ import pandas as pd
 
 class FormatCorrectionTools:
     @staticmethod
-    def value_correction(column: str, substrings: dict):
-        """Use to correct column values i.e., by removing/replacing substrings"""
-        Data.data[column].replace(substrings, regex=True)
-
-        old, new = substrings.keys(), substrings.values()
-        return f"{', '.join(old)} in {column} values got successfully replaced with {', '.join(new)} respectively"
-
-    @staticmethod
     def format_to_int(column: str) -> str:
         """Use to format all the values of a particular column as numeric"""
         while True:

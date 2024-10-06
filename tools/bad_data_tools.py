@@ -13,3 +13,11 @@ class BadDataTool:
         """Use to remove a value that can't be corrected."""
         Data.data = Data.data.drop(int(index))
         return f'Row no {index} has been removed!'
+
+    @staticmethod
+    def value_correction(column: str, substrings: dict):
+        """Use to correct column values i.e., by removing/replacing substrings"""
+        old, new = substrings.keys(), substrings.values()
+        Data.data[column] = Data.data[column].replace(old, new, regex=True)
+
+        return f"{', '.join(old)} in {column} values got successfully replaced with {', '.join(new)} respectively"

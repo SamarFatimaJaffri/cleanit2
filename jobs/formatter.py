@@ -72,12 +72,6 @@ class Formatter(Agent):
         for column in Data.columns():
             action = self.select_action(OTools.get_values(column), actions, examples)
             try:
-                if action.startswith('value_correction'):
-                    action = action.split('\n')
-                    _, value = action[0].split(', ')
-                    Tools.value_correction(column, value)
-                    action = action[1:]
-
                 if action == 'NA':
                     logging.info('No action required')
                 elif action == 'format_to_int':

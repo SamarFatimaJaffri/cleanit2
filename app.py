@@ -51,6 +51,7 @@ class App:
                 status.update(label='✅ Data Cleaned!', state='complete', expanded=False)
 
             st.subheader('Here is your cleaned data', anchor=False, divider='rainbow')
+            Data.data = Data.data.reset_index(drop=True)
             st.write(Data.data)
 
 

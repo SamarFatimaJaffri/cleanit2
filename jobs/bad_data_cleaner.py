@@ -21,7 +21,7 @@ class BadDataCleaner(Agent):
         }
         super().__init__(config)
 
-    def _find_bad_data_columns(self, column) -> list[int]:
+    def _find_bad_data_columns(self, column) -> tuple[list[int], str]:
         """
         Ask llm to locate bad data
         :param column: column name
@@ -55,17 +55,18 @@ class BadDataCleaner(Agent):
         []
         
         User:"""
-        res = re.findall(
-            r'\[[^]]*]',
-            self.respond(OTools.get_values(column), prompt, examples)
-        )[0]
-        indexes = eval(res)
+
+        res = self.respond(OTools.get_values(column), prompt, examples)
+        indexes = re.findall(r'\[[^]]*]', res)[0]
+        res = res.replace(indexes, '')
+
+        indexes = eval(indexes)
         if not isinstance(indexes, list):
             logging.error('Indexes not returned as list', indexes)
-            return []
-        return indexes
+            return [], ''
+        return indexes, res
 
-    def _clean_bad_data(self, column, indexes):
+    def _clean_bad_data(self, column, indexes, explanation):
         actions = """Analyze the data and select the action best suitable to perform on the bad-data values based on your analysis
         Available actions:
         - replace_bad_data, <value> (specify value to replace the previous value with)
@@ -86,8 +87,9 @@ class BadDataCleaner(Agent):
         
         User:"""
         for index in indexes:
+            user = f'index: {index}, Data: {Data.data.loc[index, column]}\n{explanation}'
             action = self.select_action(
-                Data.data.loc[index, column], actions, examples
+                user, actions, examples
             )
             try:
                 if action == 'NA':
@@ -105,7 +107,44 @@ class BadDataCleaner(Agent):
             except AttributeError:
                 logging.error('No action required' if action == 'NA' else 'Action not available')
 
+    def _replace_substrings(self, column):
+        prompt = """Analyze the data and make corrections in the data if required by removing unwanted substrings from values such as commas, or characters like %, $, etc from numeric columns so that data can be analyzed and if no correction is required choose NA.
+
+        You must remove all non-numeric substring from the numeric columns like salary, count, etc.
+
+        Available actions:
+        - value_correction, <{'old1': 'new1', 'old2': 'new2'}> (specify the python dictionary containing old substrings you want to replace, with new substrings you want to replace them with. You must use escape sequence where you would in python regex like \^)
+        - NA
+        """
+        examples = """User:
+        0      $362
+        1      8300
+        2     7,597
+        3     $3820
+        4       565
+        5      6472
+        6     7,425
+        7    $232.0
+        8       733
+
+        You:
+        value_correction, {'\$': '', ',': ''}
+
+        User:"""
+        action = self.respond(
+            OTools.get_values(column), prompt, examples
+        )
+        if action.startswith('value_correction'):
+            value = action[action.index(',')+2:]
+            evaluated = None
+            try:
+                evaluated = eval(value)
+            except Exception as e:
+                logging.exception(f'Exception: {e}.\nValue {value} is not a dictionary')
+            Tools.value_correction(column, evaluated if evaluated else value)
+
     def execute(self):
         for column in Data.columns():
-            indexes = self._find_bad_data_columns(column)
-            self._clean_bad_data(column, indexes)
+            indexes, response = self._find_bad_data_columns(column)
+            self._clean_bad_data(column, indexes, response)
+            self._replace_substrings(column)
