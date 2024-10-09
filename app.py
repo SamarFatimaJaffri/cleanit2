@@ -14,10 +14,9 @@ def get_dataframe(data) -> pd.DataFrame | None:
     suffix = Path(data.name).suffix
     if suffix == '.csv':
         df = pd.read_csv(data)
-        data = df.to_json()
     else:
         df = pd.DataFrame(data)
-    return df, data
+    return df
 
 
 class App:
@@ -37,7 +36,7 @@ class App:
 
                 # make pandas dataframe for processing
                 if data:
-                    df, data = get_dataframe(data)
+                    df = get_dataframe(data)
                     st.dataframe(df, height=150)
 
                 submitted = st.form_submit_button('Clean it →', on_click=save_data(df))
