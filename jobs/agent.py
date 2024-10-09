@@ -16,7 +16,13 @@ class Agent:
         self.messages = []
 
     def respond(self, data, task: str, additional_info: str) -> str:
-        """Get response from agent"""
+        """
+        Get response from agent
+        :param data: data as specified by user
+        :param task: task description
+        :param additional_info: extra information like explanation of why data is marked as bad data
+        :return:
+        """
         if not self.messages:
             st.subheader(self.agent_config['designation'], divider='gray')
 
@@ -40,6 +46,12 @@ class Agent:
         return res.content
 
     def select_action(self, data, task: str, examples: str) -> str:
-        """Ask agent to choose an action based on data observation"""
+        """
+        Ask agent to choose an action based on data observation
+        :param data: data as specified by user
+        :param task: task description
+        :param examples: for few shot prompting
+        :return:
+        """
         action = self.respond(data, task, examples)
         return action

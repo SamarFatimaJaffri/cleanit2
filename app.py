@@ -35,6 +35,7 @@ class App:
             with st.form('data', border=False):
                 data = st.file_uploader('Upload the data', type=['csv', 'json'])
 
+                # make pandas dataframe for processing
                 if data:
                     df, data = get_dataframe(data)
                     st.dataframe(df, height=150)
