@@ -20,6 +20,29 @@ def get_dataframe(data) -> pd.DataFrame | None:
     return df
 
 
+@st.dialog('Provide API KEY')
+def get_api_key():
+    providers = {'OPENAI': 'OPENAI', 'AI/ML API': 'AIMLAPI'}
+
+    # technology provider dropdown
+    provider = st.selectbox(
+        label='Choose your technology provider',
+        options=providers.keys(),
+        help='Your API KEY provider'
+    )
+
+    # api key text area
+    api_key = st.text_input('Enter your API KEY')
+
+    # refresh after the pictures have been uploaded
+    if st.button('Done'):
+        st.session_state.client = {
+            'provider': providers[provider],
+            'API_KEY': api_key
+        }
+        st.rerun()
+
+
 class App:
     def main(self):
         def save_data(dataframe):
@@ -57,5 +80,13 @@ class App:
 
 
 if __name__ == '__main__':
+    # initialize empty client
+    if not st.session_state.get('client'):
+        st.session_state.client = {'provider': None, 'API_KEY': None}
+
+    # set client
+    if not all(st.session_state.get('client').values()):
+        get_api_key()
+
     app = App()
     app.main()

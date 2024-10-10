@@ -1,17 +1,22 @@
 import streamlit as st
 import yaml
-from langchain_groq import ChatGroq
+from openai import OpenAI
 
 
 class Agent:
-    def __init__(self, agent_config, model_name='llama3-70b-8192'):
+    def __init__(self, agent_config, model_name='o1-mini'):
         self.agent_config = agent_config
         self.task_config = yaml.full_load(open('jobs/config/tasks.yaml'))
-        self._llm = ChatGroq(
-            temperature=0,
-            groq_api_key=st.secrets['GROQ_API_KEY'],
-            model_name=model_name,
-        )
+        if st.session_state.client['provider'] == 'OPENAI':
+            self._client = OpenAI(
+                api_key=st.session_state.client['API_KEY'],
+            )
+        else:
+            self._client = OpenAI(
+                api_key=st.session_state.client['API_KEY'],
+                base_url=st.secrets[f"{st.session_state.client['provider']}_URL"],
+            )
+        self._model_name = model_name
         self.messages = []
 
     def respond(self, data, task: str, additional_info: str) -> str:
@@ -25,24 +30,32 @@ class Agent:
         if not self.messages:
             st.subheader(self.agent_config['designation'], divider='gray')
 
-            self.messages = [
-                ('system', f"{self.agent_config['role']}\n\nYour goal is to {self.agent_config['goal']}"),
-            ]
-            st.markdown(f':red[**System:**]\n\n{self.messages[0][1]}')
+            self.messages = [{
+                'role': 'system',
+                'content': f"{self.agent_config['role']}\n\nYour goal is to {self.agent_config['goal']}",
+            }]
+            st.markdown(f":red[**System:**]\n\n{self.messages[0]['content']}")
 
         messages = [
             self.messages[0],
-            ('user', f"{task}\n\n{additional_info}\n{data}\n\nYou:")
+            {
+                'role': 'user',
+                'content': f'{task}\n\n{additional_info}\n{data}\n\nYou:',
+            },
         ]
 
         st.markdown(':orange[**User:**]')
         st.markdown(f'\n{task}\n\n{additional_info}')
         st.write(data)
 
-        res = self._llm.invoke(messages)
-        st.write(f':green[**Response:**]\n\n{res.content}')
+        response = self._client.chat.completions.create(
+            model=self._model_name,
+            messages=messages,
+        )
+        response = response.choices[0].message.content
+        st.write(f':green[**Response:**]\n\n{response}')
 
-        return res.content
+        return response
 
     def select_action(self, data, task: str, examples: str) -> str:
         """
