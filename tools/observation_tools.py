@@ -1,6 +1,6 @@
-from data_buffer import Data
-
 import pandas as pd
+
+from data_buffer import Data
 
 pd.set_option('display.max_rows', None)
 

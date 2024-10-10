@@ -1,10 +1,12 @@
-from jobs.agent import Agent
-from data_buffer import Data
-import re
-from tools import BadDataTool as Tools, ObservationTools as OTools
-
 import logging
+import re
+
 import yaml
+
+from data_buffer import Data
+from jobs.agent import Agent
+from tools import BadDataTool as Tools
+from tools import ObservationTools as OTools
 
 
 class BadDataCleaner(Agent):
@@ -89,7 +91,7 @@ class BadDataCleaner(Agent):
         if action.startswith('value_correction'):
             # value_correction action is returned with a dict i.e., value_correction, <{'old1': 'new1'}>
             #   get the dict from the string value
-            value = action[action.index(',')+2:]
+            value = action[action.index(',') + 2:]
 
             # evaluate the given string to get dictionary i.e., '{'e1': ''}' > {'e1': ''}
             try:

@@ -1,5 +1,5 @@
 from tools.bad_data_tools import BadDataTool
 from tools.duplicate_data_tools import DuplicateDataTools
+from tools.format_correction_tools import FormatCorrectionTools
 from tools.missing_value_tools import MissingValueTools
 from tools.observation_tools import ObservationTools
-from tools.format_correction_tools import FormatCorrectionTools

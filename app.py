@@ -1,9 +1,10 @@
+from pathlib import Path
+
+import pandas as pd
+import streamlit as st
+
 from data_buffer import Data
 from pipeline import Pipeline
-
-from pathlib import Path
-import streamlit as st
-import pandas as pd
 
 
 @st.cache_data

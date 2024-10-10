@@ -1,4 +1,5 @@
-from jobs import BadDataCleaner, DuplicateDataCleaner, Formatter, MissingDataCleaner
+from jobs import (BadDataCleaner, DuplicateDataCleaner, Formatter,
+                  MissingDataCleaner)
 
 
 class Stage:

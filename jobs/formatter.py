@@ -1,9 +1,11 @@
-from jobs.agent import Agent
-from data_buffer import Data
-from tools import FormatCorrectionTools as Tools, ObservationTools as OTools
-
 import logging
+
 import yaml
+
+from data_buffer import Data
+from jobs.agent import Agent
+from tools import FormatCorrectionTools as Tools
+from tools import ObservationTools as OTools
 
 
 class Formatter(Agent):

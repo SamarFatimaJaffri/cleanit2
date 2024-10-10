@@ -1,10 +1,12 @@
-from jobs.agent import Agent
-from data_buffer import Data
-from tools import MissingValueTools as Tools, ObservationTools as OTools
-
 import logging
+
 import numpy as np
 import yaml
+
+from data_buffer import Data
+from jobs.agent import Agent
+from tools import MissingValueTools as Tools
+from tools import ObservationTools as OTools
 
 
 class MissingDataCleaner(Agent):

@@ -1,6 +1,6 @@
-from data_buffer import Data
-
 import pandas as pd
+
+from data_buffer import Data
 
 
 class FormatCorrectionTools:
