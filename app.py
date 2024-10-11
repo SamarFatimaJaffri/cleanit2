@@ -7,6 +7,8 @@ from data_buffer import Data
 from pipeline import Pipeline
 from session import Session
 
+st.set_page_config(layout="wide")
+
 
 @st.cache_data
 def get_dataframe(data) -> pd.DataFrame | None:
@@ -21,39 +23,64 @@ def get_dataframe(data) -> pd.DataFrame | None:
     return df
 
 
-@st.dialog('Provide API KEY')
 def get_api_key():
     providers = {'OPENAI': 'OPENAI', 'AI/ML API': 'AIMLAPI'}
 
-    # technology provider dropdown
+    # get technology provider and api key
     provider = st.selectbox(
         label='Choose your technology provider',
         options=providers.keys(),
         help='Your API KEY provider'
     )
-
-    # api key text area
     api_key = st.text_input('Enter your API KEY')
 
-    # refresh after the pictures have been uploaded
-    if st.button('Done'):
-        Session(providers[provider], api_key)
-        st.rerun()
+    return providers[provider], api_key
 
 
 class App:
+    def style(self):
+        # load style
+        with open('.streamlit/style.css') as css:
+            st.markdown(f'<style>{css.read()}</style>', unsafe_allow_html=True)
+
+        # set app logo
+        st.logo(image='images/logo.png', icon_image='images/icon.png')
+
+        with st.container():
+            _, col1, col2 = st.columns([0.05, 0.55, 0.4], gap='large', vertical_alignment='center')
+            with _:
+                pass
+
+            with col1:
+                st.header('Clean It')
+                st.markdown('- Tired of cleaning bad data?' + '  \n'
+                            '- Unable to perform analysis because data is not clean?' + '  \n'
+                            '- Don\'t want to clean data but have to, as who else will?')
+
+                st.markdown('We will, Yup!' + '  \n' + 'Give your bad-data worries to us, and let us clean it for you!')
+
+                # set client provider
+                with st.popover('Setup Client', help='Specify your provider and API key'):
+                    provider, api_key = get_api_key()
+
+                    Session(provider, api_key)
+
+            with col2:
+                st.image('./images/o1-mini-img.png', width=230)
+
     def main(self):
+        self.style()
+
         def save_data(dataframe):
             Data.data = dataframe
 
-        st.logo(image='images/logo.png', icon_image='images/icon.png')
+        st.container(height=50, border=0)
 
-        if 'is_expanded' not in st.session_state:
-            st.session_state['is_expanded'] = True
-        with st.expander('User Data', expanded=st.session_state['is_expanded']):
+        col1, col2 = st.columns(2, gap='medium', vertical_alignment='center')
+        with col1:
             # load data
             df = None
-            with st.form('data', border=False):
+            with st.form('data'):
                 data = st.file_uploader('Upload the data', type=['csv', 'json'])
 
                 # make pandas dataframe for processing
@@ -62,7 +89,15 @@ class App:
                     st.dataframe(df, height=150)
 
                 submitted = st.form_submit_button('Clean it →', on_click=save_data(df))
-            st.session_state['is_expanded'] = False
+
+        with col2:
+            st.subheader('Insert you data\n\n')
+            st.markdown('Insert you data into the system so that we can fix' + '  \n'
+                        '- the misspelled names' + '  \n'
+                        '- the outliers' + '  \n'
+                        '- null values' + '  \n'
+                        'and many other issue that make your data bad')
+            st.markdown('_Make sure you have setup the client before inserting data_')
 
         # clean and analyze data
         if isinstance(df, pd.DataFrame) and submitted:
@@ -78,8 +113,5 @@ class App:
 
 
 if __name__ == '__main__':
-    # set client
-    get_api_key()
-
     app = App()
     app.main()
