@@ -2,22 +2,22 @@ import streamlit as st
 import yaml
 from openai import OpenAI
 
+from session import Session
+
 
 class Agent:
     def __init__(self, agent_config, model_name='o1-mini'):
         self.agent_config = agent_config
         self.task_config = yaml.full_load(open('jobs/config/tasks.yaml'))
-        if st.session_state.client['provider'] == 'OPENAI':
-            self._client = OpenAI(
-                api_key=st.session_state.client['API_KEY'],
-            )
-        else:
-            self._client = OpenAI(
-                api_key=st.session_state.client['API_KEY'],
-                base_url=st.secrets[f"{st.session_state.client['provider']}_URL"],
-            )
         self._model_name = model_name
         self.messages = []
+
+        params = {}
+        if Session.api_key and Session.provider:
+            params['api_key'] = Session.api_key
+            if Session.provider != 'OPENAI':
+                params['base_url'] = st.secrets[f'{Session.provider}_URL']
+        self._client = OpenAI(**params)
 
     def respond(self, data, task: str, additional_info: str) -> str:
         """
