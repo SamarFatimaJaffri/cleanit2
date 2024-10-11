@@ -1,0 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@200&display=swap');
+
+[class^=st-emotion] {
+    font-family: 'Roboto', sans-serif !important;
+    font-weight: 200;
+}
