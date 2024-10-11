@@ -25,7 +25,10 @@ class BadDataCleaner(Agent):
         config = self.task_config['find_bad_data_values']
         prompt, examples = config['task'], config['examples']
 
-        res = self.respond(OTools.get_values(column), prompt, examples)
+        res = self.get_response(OTools.get_values(column), prompt, examples)
+        if not res:  # BUG-FIX: o1-mini returns none sometimes
+            return [], ''
+
         # get the indexes array from the response
         indexes = re.findall(r'\[[^]]*]', res)[0]
         # remove the array from the response to keep the explanation for cleaning task
@@ -50,9 +53,11 @@ class BadDataCleaner(Agent):
         for index in indexes:
             # send explanation, index and bad data to llm
             user = f'{explanation}\n\nindex: {index}, Data: {Data.data.loc[index, column]}'
-            action = self.select_action(
+            action = self.get_response(
                 user, prompt, examples
             )
+            if not action:  # BUG-FIX: o1-mini returns none sometimes
+                continue
 
             try:
                 if action == 'NA':
@@ -85,9 +90,12 @@ class BadDataCleaner(Agent):
         """
         config = self.task_config['replace_substrings']
         prompt, examples = config['task'], config['examples']
-        action = self.respond(
+        action = self.get_response(
             OTools.get_values(column), prompt, examples
         )
+        if not action:  # BUG-FIX: o1-mini returns none sometimes
+            return
+
         if action.startswith('value_correction'):
             # value_correction action is returned with a dict i.e., value_correction, <{'old1': 'new1'}>
             #   get the dict from the string value

@@ -23,7 +23,10 @@ class MissingDataCleaner(Agent):
         """
         config = self.task_config['clean_numeric_values']
         prompt, examples = config['task'], config['examples']
-        action = self.select_action(OTools.get_values(column), prompt, examples)
+        action = self.get_response(OTools.get_values(column), prompt, examples)
+        if not action:  # BUG-FIX: o1-mini returns none sometimes
+            return
+
         try:
             # execute selected tool
             exec(f'Tools.{action}(column)')
@@ -39,7 +42,10 @@ class MissingDataCleaner(Agent):
         """
         config = self.task_config['clean_non_numeric_values']
         prompt, examples = config['task'], config['examples']
-        action = self.select_action(Data.data[column], prompt, examples)
+        action = self.get_response(Data.data[column], prompt, examples)
+        if not action:  # BUG-FIX: o1-mini returns none sometimes
+            return
+
         try:
             if action.startswith('fill_nulls'):
                 # fill_nulls action is returned with a value i.e., `fill_nulls, <value>`
