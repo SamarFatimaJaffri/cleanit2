@@ -22,7 +22,10 @@ class Formatter(Agent):
         config = self.task_config['correct_data_format']
         prompt, examples = config['task'], config['examples']
         for column in Data.columns():
-            action = self.select_action(OTools.get_values(column), prompt, examples)
+            action = self.get_response(OTools.get_values(column), prompt, examples)
+            if not action:  # BUG-FIX: o1-mini returns none sometimes
+                continue
+
             try:
                 if action == 'NA':
                     logging.info('No action required')
