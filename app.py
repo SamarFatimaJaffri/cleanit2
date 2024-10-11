@@ -5,6 +5,7 @@ import streamlit as st
 
 from data_buffer import Data
 from pipeline import Pipeline
+from session import Session
 
 
 @st.cache_data
@@ -36,10 +37,7 @@ def get_api_key():
 
     # refresh after the pictures have been uploaded
     if st.button('Done'):
-        st.session_state.client = {
-            'provider': providers[provider],
-            'API_KEY': api_key
-        }
+        Session(providers[provider], api_key)
         st.rerun()
 
 
@@ -80,13 +78,8 @@ class App:
 
 
 if __name__ == '__main__':
-    # initialize empty client
-    if not st.session_state.get('client'):
-        st.session_state.client = {'provider': None, 'API_KEY': None}
-
     # set client
-    if not all(st.session_state.get('client').values()):
-        get_api_key()
+    get_api_key()
 
     app = App()
     app.main()
